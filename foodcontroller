@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+require "rubygems" # ruby1.9 doesn't "require" it though
+require "rainbow"
+require "thor"
+require "terminal-table"
+
+class MyThorCommand < Thor
+  desc "foo", "Prints foo"
+  def foo
+    puts "foo"
+  end
+  desc "bar", "Prints colored string"
+  def bar
+    puts Rainbow("this is red").red + " and " + Rainbow("this on yellow bg").bg(:yellow) + " and " + Rainbow("even bright underlined!").underline.bright
+  end
+  desc "table", "Show some table"
+  def table
+    bar1 = "[#####     ]"
+    bar2 = "[######### ]"
+    bar3 = "[####      ]"
+    rows = []
+    rows << [Rainbow('Kolbasa').orange, bar1]
+    rows << ['Vodka', bar2]
+    rows << [Rainbow('Хлеб').white, bar3]
+    table = Terminal::Table.new :rows => rows
+    puts table
+  end
+end
+
+MyThorCommand.start
