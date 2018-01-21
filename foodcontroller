@@ -10,14 +10,14 @@ class MyThorCommand < Thor
     name = ask "Put name of food: "
     amount = ask "How much food we have: "
     a = amount.to_i
-    conn = PG.connect( dbname: 'test', user: ENV['USER'], password: ENV['PASS'] )
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
     conn.exec( "INSERT INTO food(name,amount) values ('#{name}',#{a});" )
-    puts "Put in table: "+ Rainbow("OK").green
+    puts "Put in table: "+ Rainbow("OK").orange
   end
 
   desc "show", "Show all food"
   def show
-    conn = PG.connect( dbname: 'test', user: ENV['USER'], password: ENV['PASS'] )
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
     result = conn.exec( "SELECT * FROM food;" )
     rows = []
     rows << ['id', 'name', 'amount']
@@ -44,12 +44,12 @@ class MyThorCommand < Thor
 			res.each do |r|
 				arr.push(r['datname'])
 			end
-			if arr.include?("food")
+			if arr.include?("fooddb")
 				puts "Database is already exists!"
 			else
-			sql_create = "CREATE DATABASE food;"
+			sql_create = "CREATE DATABASE fooddb;"
 			conn.exec(sql_create)
-			puts "CREATE DATABASE food"
+			puts "CREATE DATABASE fooddb"
 			end	
 			res.clear
 			conn.close
@@ -61,10 +61,10 @@ class MyThorCommand < Thor
 			res.each do |r|
 				arr.push(r['datname'])
 			end
-			if arr.include?("food")
-			sql_drop = "DROP DATABASE food;"
+			if arr.include?("fooddb")
+			sql_drop = "DROP DATABASE fooddb;"
 			conn.exec(sql_drop)
-			puts "DROP DATABASE food"
+			puts "DROP DATABASE fooddb"
 		 	else
 			puts "Database doesn\'t exists"	
 			end
@@ -72,23 +72,24 @@ class MyThorCommand < Thor
 			conn.close
 		end
 		if init
-			conn_f = PG.connect( dbname: 'food', user: ENV['USER'], password: ENV['PASS'] )
+			conn_f = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+			sql_check = "SELECT tablename FROM pg_catalog.pg_tables WHERE  schemaname != 'pg_catalog'
+AND schemaname != 'information_schema';"
 			sql_init = "CREATE TABLE food(id SERIAL, name varchar, amount integer);"
+			res = conn_f.exec(sql_check)
+			arr = Array.new
+			res.each do |r|
+				arr.push(r['tablename'])
+			end
+			if arr.include?("food")
+				puts "Table is already exists!"
+			else
 			conn_f.exec(sql_init)
 			puts "CREATE TABLE food" 
+			end	
+			res.clear
+			conn_f.close
 		end
-  end
-  desc "table", "Show some table"
-  def table
-    bar1 = "[#####     ]"
-    bar2 = "[######### ]"
-    bar3 = "[####      ]"
-    rows = []
-    rows << [Rainbow('Kolbasa').orange, bar1]
-    rows << ['Vodka', bar2]
-    rows << [Rainbow('Хлеб').white, bar3]
-    table = Terminal::Table.new :rows => rows
-    puts table
   end
 end
 
