@@ -3,12 +3,31 @@ require "rubygems" # ruby1.9 doesn't "require" it though
 require "rainbow"
 require "thor"
 require "terminal-table"
-
+require "pg"
 class MyThorCommand < Thor
-  desc "foo", "Prints foo"
-  def foo
-    puts "foo"
+  desc "new NAME AMOUNT", "Puts new food in database. Put arguments in the order"
+  def new(name, amount)
+    puts "Put name of food: #{name}"
+    puts "How much food we have: #{amount}"
+    a = amount.to_i
+    conn = PG.connect( dbname: 'test', user: ENV['USER'], password: ENV['PASS'] )
+    conn.exec( "INSERT INTO food(name,amount) values ('#{name}',#{a});" )
+    puts "Put in table: "+ Rainbow("OK").green
   end
+
+  desc "show", "Show all food"
+  def show
+    conn = PG.connect( dbname: 'test', user: ENV['USER'], password: ENV['PASS'] )
+    result = conn.exec( "SELECT * FROM food;" )
+    rows = []
+    rows << ['id', 'name', 'amount']
+    result.each do |row|
+    rows << [row['id'], row['name'],row['amount']]
+    end
+    table = Terminal::Table.new :rows => rows
+    puts table
+  end
+
   desc "bar", "Prints colored string"
   def bar
     puts Rainbow("this is red").red + " and " + Rainbow("this on yellow bg").bg(:yellow) + " and " + Rainbow("even bright underlined!").underline.bright
