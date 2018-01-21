@@ -5,10 +5,10 @@ require "thor"
 require "terminal-table"
 require "pg"
 class MyThorCommand < Thor
-  desc "new NAME AMOUNT", "Puts new food in database. Put arguments in the order"
-  def new(name, amount)
-    puts "Put name of food: #{name}"
-    puts "How much food we have: #{amount}"
+  desc "new", "Puts new food in database. Put arguments in the order"
+  def new
+    name = ask "Put name of food: "
+    amount = ask "How much food we have: "
     a = amount.to_i
     conn = PG.connect( dbname: 'test', user: ENV['USER'], password: ENV['PASS'] )
     conn.exec( "INSERT INTO food(name,amount) values ('#{name}',#{a});" )
@@ -28,9 +28,55 @@ class MyThorCommand < Thor
     puts table
   end
 
-  desc "bar", "Prints colored string"
-  def bar
-    puts Rainbow("this is red").red + " and " + Rainbow("this on yellow bg").bg(:yellow) + " and " + Rainbow("even bright underlined!").underline.bright
+  desc "db", "Works with database"
+	method_option :create, :aliases => "-c", :desc => "Create db"  
+	method_option :drop, :aliases => "-d", :desc => "Drop db"  
+	method_option :init, :aliases => "-i", :desc => "Init db"  	
+	def db
+		check_if_exist = "SELECT datname FROM pg_database WHERE datistemplate = false;"
+		create = options[:create]
+		drop = options[:drop]
+		init = options[:init]
+		if create
+      conn = PG.connect( dbname: ENV['USER'], user: ENV['USER'], password: ENV['PASS'] )
+			res = conn.exec(check_if_exist)
+			arr = Array.new
+			res.each do |r|
+				arr.push(r['datname'])
+			end
+			if arr.include?("food")
+				puts "Database is already exists!"
+			else
+			sql_create = "CREATE DATABASE food;"
+			conn.exec(sql_create)
+			puts "CREATE DATABASE food"
+			end	
+			res.clear
+			conn.close
+		end
+		if drop
+      conn = PG.connect( dbname: ENV['USER'], user: ENV['USER'], password: ENV['PASS'] )
+			res = conn.exec(check_if_exist)
+			arr = Array.new
+			res.each do |r|
+				arr.push(r['datname'])
+			end
+			if arr.include?("food")
+			sql_drop = "DROP DATABASE food;"
+			conn.exec(sql_drop)
+			puts "DROP DATABASE food"
+		 	else
+			puts "Database doesn\'t exists"	
+			end
+			res.clear
+			conn.close
+		end
+		if init
+			conn_f = PG.connect( dbname: 'food', user: ENV['USER'], password: ENV['PASS'] )
+			sql_init = "CREATE TABLE food(id SERIAL, name varchar, amount integer);"
+			conn_f.exec(sql_init)
+			puts "CREATE TABLE food" 
+		end
   end
   desc "table", "Show some table"
   def table
