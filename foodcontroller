@@ -13,7 +13,69 @@ class MyThorCommand < Thor
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
     conn.exec( "INSERT INTO food(name,amount) values ('#{name}',#{a});" )
     puts "Put in table: "+ Rainbow("OK").orange
+		conn.close
   end
+
+	desc "template", "Work with food templates"
+	method_option :init, :aliases => "-i", :desc => "Init db of templates"  	
+	method_option :list, :aliases => "-l", :desc => "Show list of templates"  	
+	method_option :create, :aliases => "-c", :desc => "Create new template"  	
+	def template	
+	
+	list = options[:list]
+	init = options[:init]
+	create = options[:create]
+	if init
+			conn_f = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+			sql_check = "SELECT tablename FROM pg_catalog.pg_tables WHERE  schemaname != 'pg_catalog'
+AND schemaname != 'information_schema';"
+			sql_init = "CREATE TABLE templates(id SERIAL, name varchar, speed integer, measure varchar);"
+			res = conn_f.exec(sql_check)
+			arr = Array.new
+			res.each do |r|
+				arr.push(r['tablename'])
+			end
+			if arr.include?("templates")
+				puts "Table is already exists!"
+			else
+			conn_f.exec(sql_init)
+			puts "CREATE TABLE templates" 
+			end	
+			res.clear
+			conn_f.close
+	end
+	if list
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+    result = conn.exec( "SELECT * FROM templates;" )
+    rows = []
+    rows << ['id', 'name', 'speed', 'measure']
+    result.each do |row|
+    rows << [row['id'], row['name'],row['speed'],row['measure']]
+    end
+    table = Terminal::Table.new :rows => rows
+    puts table
+	end
+	if create
+		name = ask "Put name of food : "
+		grmg = Array.new
+		grmg = ["gr", "mg"]
+		correct_answer = nil
+			until correct_answer				
+				measure = (ask "Gramms or miligrams : ", :limited_to => ["gr", "mg"])
+				correct_answer = grmg.include?(measure) ? measure : nil
+				say ("Your response must be one of: gr / mg. Please try again.") unless correct_answer
+				puts grmg[0] + grmg[1]
+				correct_answer
+			end
+			
+		speed = ask "How fast will you eat it : "
+		sp = speed.to_i
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+    conn.exec( "INSERT INTO templates(name,speed,measure) values ('#{name}', '#{sp}' , '#{measure}');" )
+    puts "Put in table: "+ Rainbow("OK").orange
+		conn.close
+	end
+	end
 
   desc "show", "Show all food"
   def show
