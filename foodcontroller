@@ -9,12 +9,24 @@ require "pg"
 class MyThorCommand < Thor
   desc "new", "Puts new food in database. Put arguments in the order"
   def new
-    name = ask "Put name of food: "
-    amount = ask "How much food we have: "
-    a = amount.to_i
-    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    conn.exec( "INSERT INTO food(name,amount) values ('#{name}',#{a});" )
-    puts "Put in table: "+ Rainbow("OK").orange
+		puts "List of templates : "
+				
+		conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+    res = conn.exec( "SELECT id,name FROM templates;" )
+    rows = []
+    rows << ['id', 'name']
+    res.each do |row|
+    rows << [row['id'], row['name']]
+    end
+    table = Terminal::Table.new :rows => rows
+    puts table
+		
+		ans = ask "Please choose a template : "
+    a = ans.to_i
+		amount = ask "How much do you have : "
+		am = amount.to_i		
+		conn.exec("INSERT INTO food(template_id,amount) VALUES (#{a}, #{am});")
+		puts "Insert in db #{a} and #{am}"
 		conn.close
   end
 
@@ -104,11 +116,11 @@ AND schemaname != 'information_schema';"
   desc "show", "Show all food"
   def show
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    result = conn.exec( "SELECT * FROM food;" )
+    result = conn.exec( "select food.id as id,templates.name as name,food.amount as amount from food inner join templates on food.template_id=templates.id;" )
     rows = []
     rows << ['id', 'name', 'amount']
     result.each do |row|
-    rows << [row['id'], row['name'],row['amount']]
+		rows << [row['id'], row['name'],row['amount']]
     end
     table = Terminal::Table.new :rows => rows
     puts table
@@ -161,7 +173,7 @@ AND schemaname != 'information_schema';"
 			conn_f = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
 			sql_check = "SELECT tablename FROM pg_catalog.pg_tables WHERE  schemaname != 'pg_catalog'
 AND schemaname != 'information_schema';"
-			sql_init = "CREATE TABLE food(id SERIAL, name varchar, amount integer);"
+			sql_init = "CREATE TABLE food(id SERIAL, template_id integer, amount integer);"
 			res = conn_f.exec(sql_check)
 			arr = Array.new
 			res.each do |r|
