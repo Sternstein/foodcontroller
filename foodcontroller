@@ -4,6 +4,8 @@ require "rainbow"
 require "thor"
 require "terminal-table"
 require "pg"
+
+
 class MyThorCommand < Thor
   desc "new", "Puts new food in database. Put arguments in the order"
   def new
@@ -20,16 +22,17 @@ class MyThorCommand < Thor
 	method_option :init, :aliases => "-i", :desc => "Init db of templates"  	
 	method_option :list, :aliases => "-l", :desc => "Show list of templates"  	
 	method_option :create, :aliases => "-c", :desc => "Create new template"  	
-	def template	
-	
+	method_option :drop, :aliases => "-d", :desc => "Drop db"
+	def template
 	list = options[:list]
 	init = options[:init]
 	create = options[:create]
-	if init
+	drop = options[:drop]
+  if init
 			conn_f = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
 			sql_check = "SELECT tablename FROM pg_catalog.pg_tables WHERE  schemaname != 'pg_catalog'
 AND schemaname != 'information_schema';"
-			sql_init = "CREATE TABLE templates(id SERIAL, name varchar, speed integer, measure varchar);"
+			sql_init = "CREATE TABLE templates(id SERIAL, name varchar, speed integer, expire integer, measure varchar);"
 			res = conn_f.exec(sql_check)
 			arr = Array.new
 			res.each do |r|
@@ -44,13 +47,33 @@ AND schemaname != 'information_schema';"
 			res.clear
 			conn_f.close
 	end
-	if list
+  if drop
+			conn_f = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+			sql_check = "SELECT tablename FROM pg_catalog.pg_tables WHERE  schemaname != 'pg_catalog'
+AND schemaname != 'information_schema';"
+			sql_d = "DROP TABLE templates;"
+			res = conn_f.exec(sql_check)
+			arr = Array.new
+			res.each do |r|
+				arr.push(r['tablename'])
+			end
+			if arr.include?("templates")
+				puts "Dropping"
+        conn_f.exec(sql_d)
+			else
+			puts "Table doesn't exists" 
+			end
+			res.clear
+			conn_f.close
+	end
+	
+  if list
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
     result = conn.exec( "SELECT * FROM templates;" )
     rows = []
-    rows << ['id', 'name', 'speed', 'measure']
+    rows << ['id', 'name', 'speed', 'expire', 'measure']
     result.each do |row|
-    rows << [row['id'], row['name'],row['speed'],row['measure']]
+    rows << [row['id'], row['name'],row['speed'],row['expire'],row['measure']]
     end
     table = Terminal::Table.new :rows => rows
     puts table
@@ -58,20 +81,21 @@ AND schemaname != 'information_schema';"
 	if create
 		name = ask "Put name of food : "
 		grmg = Array.new
-		grmg = ["gr", "mg"]
+		grmg = ["gr", "mg", "p"]
 		correct_answer = nil
 			until correct_answer				
-				measure = (ask "Gramms or miligrams : ", :limited_to => ["gr", "mg"])
+				measure = (ask "Enter measure Gramms/Milligrams/Pieces : ", :limited_to => ["gr", "mg", "p"])
 				correct_answer = grmg.include?(measure) ? measure : nil
 				say ("Your response must be one of: gr / mg. Please try again.") unless correct_answer
-				puts grmg[0] + grmg[1]
 				correct_answer
 			end
 			
 		speed = ask "How fast will you eat it : "
+    expire = ask "How long you can keep it : "
 		sp = speed.to_i
+    ex = expire.to_i
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    conn.exec( "INSERT INTO templates(name,speed,measure) values ('#{name}', '#{sp}' , '#{measure}');" )
+    conn.exec( "INSERT INTO templates(name,speed,expire,measure) values ('#{name}', '#{sp}' , '#{ex}' , '#{measure}');" )
     puts "Put in table: "+ Rainbow("OK").orange
 		conn.close
 	end
@@ -154,5 +178,6 @@ AND schemaname != 'information_schema';"
 		end
   end
 end
+
 
 MyThorCommand.start
