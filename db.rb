@@ -48,8 +48,6 @@ class Db
 
   def insert_food(arg1, arg2, arg3)
 		puts arg3
-		puts arg3.class
-		puts arg3.year, arg3.mon, arg3.mday
 		conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
 		conn.exec("INSERT INTO food(template_id,amount,date_in) VALUES (#{arg1}, #{arg2}, '#{arg3}');")
 		puts "Insert in db #{arg1} , #{arg2} and #{arg3}"
