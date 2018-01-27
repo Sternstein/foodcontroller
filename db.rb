@@ -1,11 +1,11 @@
 class Db
   def show
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    result = conn.exec( "select food.id as id,templates.name as name,food.amount as amount from food inner join templates on food.template_id=templates.id;" )
+		result = conn.exec( "select food.id as id,templates.name as name,food.amount as amount,food.date_in as date from food inner join templates on food.template_id=templates.id;" )
     rows = []
-    rows << ['id', 'name', 'amount']
+    rows << ['id', 'name', 'amount', 'date']
     result.each do |row|
-		rows << [row['id'], row['name'],row['amount']]
+		rows << [row['id'], row['name'],row['amount'],row['date']]
     end
     table = Terminal::Table.new :rows => rows
     puts table
@@ -46,10 +46,13 @@ class Db
 		conn.close
   end
 
-  def insert_food(arg1, arg2)
+  def insert_food(arg1, arg2, arg3)
+		puts arg3
+		puts arg3.class
+		puts arg3.year, arg3.mon, arg3.mday
 		conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-		conn.exec("INSERT INTO food(template_id,amount) VALUES (#{arg1}, #{arg2});")
-		puts "Insert in db #{arg1} and #{arg2}"
+		conn.exec("INSERT INTO food(template_id,amount,date_in) VALUES (#{arg1}, #{arg2}, '#{arg3}');")
+		puts "Insert in db #{arg1} , #{arg2} and #{arg3}"
     conn.close
   end
 
@@ -73,7 +76,7 @@ class Db
 			conn_f = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
 			sql_check = "SELECT tablename FROM pg_catalog.pg_tables WHERE  schemaname != 'pg_catalog'
 AND schemaname != 'information_schema';"
-			sql_init = "CREATE TABLE food(id SERIAL, template_id integer, amount integer);"
+			sql_init = "CREATE TABLE food(id SERIAL, template_id integer, amount integer, date_in date);"
 			res = conn_f.exec(sql_check)
 			arr = Array.new
 			res.each do |r|

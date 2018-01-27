@@ -4,6 +4,7 @@ require "rainbow"
 require "thor"
 require "terminal-table"
 require "pg"
+require "date"
 require_relative "db.rb"
 
 class MyThorCommand < Thor
@@ -14,8 +15,28 @@ class MyThorCommand < Thor
 		ans = ask "Please choose a template : "
     a = ans.to_i
 		amount = ask "How much do you have : "
-		am = amount.to_i		
-    db.insert_food(a,am)
+		am = amount.to_i
+		puts "Choose date : "
+		puts "1. Today"
+		puts "2. Yesterday"
+		puts "3. My date"
+		an = ask 'Enter a number'
+		data = an.to_i
+		case data
+		when 1
+			date = Date.today
+		when 2
+			date = Date.today - 1
+		when 3
+			year = ask 'Enter your date in format : 2018'
+			month = ask 'Enter your date in format : 01 '
+			day = ask 'Enter your date in format : 31 '
+			y = year.to_i
+			m = month.to_i
+			d = day.to_i
+			date = Date.new(y,m,d)
+		end
+		db.insert_food(a,am,date)
   end
 
 	desc "template", "Work with food templates"
