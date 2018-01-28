@@ -1,11 +1,40 @@
 class Db
-  def show
+	def check_date(date)
+		case date
+		when 0..2
+			return Rainbow("WARNING").orange
+		when 3..700
+			return Rainbow("OK").white
+		else
+			return Rainbow("NOT OK").red
+		end
+	end
+
+	def check_amount(amount,speed)
+		sp = speed.to_i
+		am = amount.to_i
+		if sp >= am
+			return Rainbow("NOT OK").red
+		else
+			return Rainbow("OK").white
+		end
+	end
+
+	def show
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-		result = conn.exec( "select food.id as id,templates.name as name,food.amount as amount,food.date_in as date from food inner join templates on food.template_id=templates.id;" )
+		result = conn.exec( "select food.id as id,templates.expire as expire,templates.name as name,templates.speed as speed,food.amount as amount,food.date_in as date from food inner join templates on food.template_id=templates.id;" )
     rows = []
-    rows << ['id', 'name', 'amount', 'date']
+    rows << ['id', 'name', 'amount', 'date', 'status_date' , 'status_amount']
     result.each do |row|
-		rows << [row['id'], row['name'],row['amount'],row['date']]
+			today = Date.today
+			production_date = Date.parse row['date']
+			exp_days = row['expire'].to_i
+			exp_date = production_date + exp_days
+			dif = exp_date - today
+			diff = dif.to_i
+			status_date = check_date(diff)
+			status_amount = check_amount(row['amount'],row['speed'])
+			rows << [row['id'], row['name'],row['amount'],row['date'],status_date, status_amount ]		
     end
     table = Terminal::Table.new :rows => rows
     puts table
