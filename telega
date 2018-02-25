@@ -1,0 +1,16 @@
+#!/home/agagarin/.rbenv/shims/ruby
+require 'pg'
+require 'telegram/bot'
+require_relative 'db.rb'
+token = '411332120:AAE9gDBhGva9vaabwCcjMyqA36h0JqJxUZI'
+
+Telegram::Bot::Client.run(token) do |bot|
+	db = Db.new
+	res = db.bad_products
+	spisok = ''
+	res.each do |row|
+		spisok += row['name'].ljust(10) + row['amount'].ljust(10) + row['measure'] + "\n" 
+	end
+  	bot.api.send_message(chat_id: '399379559', text: spisok)
+		puts spisok
+end
