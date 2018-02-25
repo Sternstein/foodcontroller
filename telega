@@ -2,7 +2,7 @@
 require 'pg'
 require 'telegram/bot'
 require_relative 'db.rb'
-token = '411332120:AAE9gDBhGva9vaabwCcjMyqA36h0JqJxUZI'
+token = ENV['telega_API']
 
 Telegram::Bot::Client.run(token) do |bot|
 	db = Db.new
@@ -11,6 +11,6 @@ Telegram::Bot::Client.run(token) do |bot|
 	res.each do |row|
 		spisok += row['name'].ljust(10) + row['amount'].ljust(10) + row['measure'] + "\n" 
 	end
-  	bot.api.send_message(chat_id: '399379559', text: spisok)
+  	bot.api.send_message(chat_id: ENV['chat_id'], text: spisok)
 		puts spisok
 end
