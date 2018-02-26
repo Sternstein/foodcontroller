@@ -72,7 +72,7 @@ class MyThorCommand < Thor
   desc "show", "Show all food"
   def show
     db = Db.new
-    db.show
+    puts db.show
   end
 
   desc "db", "Works with database"

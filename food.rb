@@ -1,6 +1,7 @@
 require 'date'
-
+require 'pg'
 class Food
+	attr_accessor :id
 	attr_reader :name	
 	attr_accessor :desc
 	attr_reader :amount	
@@ -21,7 +22,7 @@ class Food
 		if value == ""
 			raise "Measure cat't be blank!"
 		end
-		if measures.include? value
+		if !measures.include? value
 			raise "Measure can be gr, mg or p!"
 		end
 		@measure = value
@@ -45,7 +46,7 @@ class Food
 		if value < 0
 			raise "Can't be negative"
 		end
-		@speed_of_eation = value
+		@speed_of_eating = value
 	end
 
 	def expiration_speed=(value)
@@ -63,6 +64,28 @@ class Food
 		self.expiration_speed = expiration_speed
 		self.date = date
 		self.measure = measure
+	end
+
+	def insert
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+    conn.exec("INSERT INTO food(name,description,amount,expire,measure,speed,date_in) VALUES ('#{name}', '#{desc}', #{amount}, #{expiration_speed}, '#{measure}', #{speed_of_eating}, '#{date}');")
+    puts "Insert in db #{name}"
+    conn.close
+	end
+	
+	def delete
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+    conn.exec("DELETE FROM food WHERE id=#{id};")
+    puts "Deleted #{name}"
+    conn.close
+	end
+
+	def update
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+    conn.exec("UPDATE FROM food WHERE id=#{id};")
+    conn.exec("UPDATE food SET name = '#{name}', description = '#{desc}',amount = #{amount} ,expire = #{expiration_speed}, measure = '#{measure}',speed = #{speed_of_eating},date_in = '#{date}' WHERE id=#{id});")
+    puts "Updated #{name}"
+    conn.close
 	end
 
 end

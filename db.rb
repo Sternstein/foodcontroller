@@ -1,4 +1,5 @@
 # Works with database
+require 'pg'
 class Db
   def check_date(date)
     case date
@@ -30,19 +31,19 @@ class Db
 
   def show
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    result = conn.exec( "select food.id as id,templates.expire as expire,templates.name as name,templates.speed as speed,food.amount as amount,food.date_in as date from food inner join templates on food.template_id=templates.id;" )
+    result = conn.exec( "select id,name,speed,expire,amount,date_in from food;" )
     rows = []
-    rows << ['id', 'name', 'amount', 'date', 'status_date' , 'status_amount']
+    rows << ['id', 'name', 'amount', 'date','status_amount', 'status_date']
     result.each do |row|
       today = Date.today
-      production_date = Date.parse row['date']
+      production_date = Date.parse row['date_in']
       exp_days = row['expire'].to_i
       exp_date = production_date + exp_days
       dif = exp_date - today
       diff = dif.to_i
       status_date = check_date(diff)
       status_amount = check_amount(row['amount'],row['speed'])
-      rows << [row['id'], row['name'],row['amount'],row['date'],status_date, status_amount ]		
+      rows << [row['id'],row['name'],row['amount'],row['date_in'],status_amount,status_date]		
     end
     table = Terminal::Table.new :rows => rows
     conn.close
