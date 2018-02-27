@@ -1,5 +1,4 @@
 # Works with database
-require 'pg'
 class Db
   def check_date(date)
     case date
@@ -92,6 +91,20 @@ class Db
     conn.close
   end
 
+	def get_template(id)
+		f = Food.new
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+    temp = conn.exec("SELECT * FROM templates WHERE id=#{id};")
+		temp.each do |t|
+    f.name = t['name']
+		f.desc = t['description']
+		f.expiration_speed = t['expire'].to_i
+		f.speed_of_eating = t['speed'].to_i
+		end 
+		conn.close
+		return f
+	end
+
   def db_create
     check_if_exist = "SELECT datname FROM pg_database WHERE datistemplate = false;"
     conn = PG.connect( dbname: ENV['USER'], user: ENV['USER'], password: ENV['PASS'] )
@@ -124,12 +137,13 @@ AND schemaname != 'information_schema';"
       conn_f.exec(sql_init)
       puts "CREATE TABLE food" 
     end	
-    sql_init_t = "CREATE TABLE templates(id SERIAL, name varchar, description varchar, amount integer, expire integer, measure varchar, speed integer);"
+    sql_init_t = "CREATE TABLE templates(id SERIAL, name varchar, description varchar, expire integer, measure varchar, speed integer);"
     if arr.include?("templates")
       puts "Table is already exists!"
     else
       conn_f.exec(sql_init_t)
-      puts "CREATE TABLE templates" 
+      puts "CREATE TABLE templates"
+			put_templates 
     end	
       res.clear
       conn_f.close

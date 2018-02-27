@@ -56,16 +56,6 @@ class Food
 		@expiration_speed = value
 	end
 
-	def initialize(name="Product",desc="Empty", amount = 1, speed_of_eating = 1, expiration_speed = 1, date = Date.today, measure="p")
-		self.name = name
-		self.desc = desc
-		self.amount = amount
-		self.speed_of_eating = speed_of_eating
-		self.expiration_speed = expiration_speed
-		self.date = date
-		self.measure = measure
-	end
-
 	def insert
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
     conn.exec("INSERT INTO food(name,description,amount,expire,measure,speed,date_in) VALUES ('#{name}', '#{desc}', #{amount}, #{expiration_speed}, '#{measure}', #{speed_of_eating}, '#{date}');")
@@ -85,6 +75,13 @@ class Food
     conn.exec("UPDATE FROM food WHERE id=#{id};")
     conn.exec("UPDATE food SET name = '#{name}', description = '#{desc}',amount = #{amount} ,expire = #{expiration_speed}, measure = '#{measure}',speed = #{speed_of_eating},date_in = '#{date}' WHERE id=#{id});")
     puts "Updated #{name}"
+    conn.close
+	end
+
+	def save_template
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+    conn.exec("INSERT INTO templates(name,description,expire,measure,speed) VALUES ('#{name}', '#{desc}', #{expiration_speed}, '#{measure}', #{speed_of_eating});")
+    puts "Insert in db #{name}"
     conn.close
 	end
 

@@ -5,7 +5,10 @@ require "thor"
 require "terminal-table"
 require "pg"
 require "date"
+require_relative "food.rb"
 require_relative "db.rb"
+require_relative "parser.rb"
+include Parser
 
 class MyThorCommand < Thor
   desc "new", "Puts new food in database. Put arguments in the order"
@@ -14,8 +17,10 @@ class MyThorCommand < Thor
 	  db.show_templates	
 		ans = ask "Please choose a template : "
     a = ans.to_i
+		food = Food.new
+		food = db.get_template(a)
 		amount = ask "How much do you have : "
-		am = amount.to_i
+		food.amount = amount.to_i
 		puts "Choose date : "
 		puts "1. Today"
 		puts "2. Yesterday"
@@ -36,7 +41,8 @@ class MyThorCommand < Thor
 			d = day.to_i
 			date = Date.new(y,m,d)
 		end
-		db.insert_food(a,am,date)
+		food.date = date
+		food.insert
   end
 
 	desc "template", "Work with food templates"

@@ -1,0 +1,10 @@
+- name: Bread
+  description: Need to make Butterbrot
+  measure: gr
+  expire: 7
+  speed: 200
+- name: Milk 
+  description: Cow gives it to us
+  measure: mg
+  expire: 7
+  speed: 150
