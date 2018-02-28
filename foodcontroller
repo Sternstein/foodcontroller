@@ -8,17 +8,18 @@ require "date"
 require_relative "food.rb"
 require_relative "db.rb"
 require_relative "parser.rb"
+require_relative "table.rb"
 include Parser
-
+include Table
+include Db
 class MyThorCommand < Thor
   desc "new", "Puts new food in database. Put arguments in the order"
   def new
-    db = Db.new
-	  db.show_templates	
+	  puts table_templates(templates)	
 		ans = ask "Please choose a template : "
     a = ans.to_i
 		food = Food.new
-		food = db.get_template(a)
+		food = get_template(a)
 		amount = ask "How much do you have : "
 		food.amount = amount.to_i
 		puts "Choose date : "
@@ -51,12 +52,13 @@ class MyThorCommand < Thor
 	def template
 	list = options[:list]
 	create = options[:create]
-	db = Db.new
   if list
-    db.show_templates_full
+    puts table_templates(templates)
 	end
 	if create
+		tp = Food.new
 		name = ask "Put name of food : "
+		desc = ask "Put description for food : "
 		grmg = Array.new
 		grmg = ["gr", "mg", "p"]
 		correct_answer = nil
@@ -71,14 +73,18 @@ class MyThorCommand < Thor
     expire = ask "How long you can keep it : "
 		sp = speed.to_i
     ex = expire.to_i
-    db.insert_template(name,sp,ex,measure)
+    tp.name = name
+    tp.desc = desc
+    tp.expiration_speed = ex
+    tp.speed_of_eating = sp
+    tp.measure = measure
+		tp.save_template
 	end
 	end
 
   desc "show", "Show all food"
   def show
-    db = Db.new
-    puts db.show
+    puts table_food(products)
   end
 
   desc "db", "Works with database"
@@ -87,12 +93,11 @@ class MyThorCommand < Thor
 	def db
 		create = options[:create]
 		drop = options[:drop]
-		db = Db.new
     if create
-      db.db_create
+      db_create
 		end
 		if drop
-      db.db_drop
+      db_drop
 		end
   end
 end

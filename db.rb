@@ -1,107 +1,43 @@
 # Works with database
-class Db
-  def check_date(date)
-    case date
-      when 0..2
-        return Rainbow("WARNING").orange
-      when 3..700
-	return Rainbow("OK").white
-      else
-        return Rainbow("NOT OK").red
-      end
-  end
-
-  def check_amount(amount,speed)
-    sp = speed.to_i
-    am = amount.to_i
-    if sp >= am
-      return Rainbow("NOT OK").red
-    else
-     return Rainbow("OK").white
-    end
-  end
-
-	def bad_products
+module Db
+	def do_sql(sql)
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    result = conn.exec( "select food.id as id,templates.expire as expire,templates.name as name,templates.measure as measure,templates.speed as speed,food.amount as amount,food.date_in as date from food inner join templates on food.template_id=templates.id;" )
+    result = conn.exec(sql)
 		conn.close
 		return result	
 	end
+	
+	def bad_products_amount
+    sql = "select * from food where speed >= amount;"
+		do_sql(sql)
+	end
+	
+	def bad_products_all
+    sql = "select * from food where speed >= amount;"
+		do_sql(sql)
+	end
 
-  def show
-    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    result = conn.exec( "select id,name,speed,expire,amount,date_in from food;" )
-    rows = []
-    rows << ['id', 'name', 'amount', 'date','status_amount', 'status_date']
-    result.each do |row|
-      today = Date.today
-      production_date = Date.parse row['date_in']
-      exp_days = row['expire'].to_i
-      exp_date = production_date + exp_days
-      dif = exp_date - today
-      diff = dif.to_i
-      status_date = check_date(diff)
-      status_amount = check_amount(row['amount'],row['speed'])
-      rows << [row['id'],row['name'],row['amount'],row['date_in'],status_amount,status_date]		
-    end
-    table = Terminal::Table.new :rows => rows
-    conn.close
-    return table
+  def products
+		sql = "select id,name,speed,expire,amount,date_in from food;"
+		do_sql(sql)
   end
 
-  def insert_template(name,sp,ex,measure)
-    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    conn.exec( "INSERT INTO templates(name,speed,expire,measure) values ('#{name}', '#{sp}' , '#{ex}' , '#{measure}');" )
-    puts "Put in table: "+ Rainbow("OK").orange
-    conn.close
-  end
 
-  def show_templates_full 
-    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    result = conn.exec( "SELECT * FROM templates;" )
-    rows = []
-    rows << ['id', 'name', 'speed', 'expire', 'measure']
-    result.each do |row|
-    rows << [row['id'], row['name'],row['speed'],row['expire'],row['measure']]
-    end
-    table = Terminal::Table.new :rows => rows
-    puts table
-    conn.close
-  end
-
-  def show_templates
-    puts "List of templates : "
-    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    res = conn.exec( "SELECT id,name FROM templates;" )
-    rows = []
-    rows << ['id', 'name']
-    res.each do |row|
-      rows << [row['id'], row['name']]
-    end
-    table = Terminal::Table.new :rows => rows
-    puts table
-    conn.close
-  end
-
-  def insert_food(arg1, arg2, arg3)
-    puts arg3  
-    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    conn.exec("INSERT INTO food(template_id,amount,date_in) VALUES (#{arg1}, #{arg2}, '#{arg3}');")
-    puts "Insert in db #{arg1} , #{arg2} and #{arg3}"
-    conn.close
+  def templates 
+    sql = "SELECT * FROM templates;"
+		do_sql(sql)
   end
 
 	def get_template(id)
 		f = Food.new
-    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    temp = conn.exec("SELECT * FROM templates WHERE id=#{id};")
+    sql = "SELECT * FROM templates WHERE id=#{id};"
+		temp = do_sql(sql)
 		temp.each do |t|
     f.name = t['name']
 		f.desc = t['description']
 		f.expiration_speed = t['expire'].to_i
 		f.speed_of_eating = t['speed'].to_i
 		end 
-		conn.close
 		return f
 	end
 
