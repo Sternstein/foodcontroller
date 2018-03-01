@@ -82,9 +82,23 @@ class MyThorCommand < Thor
 	end
 	end
 
-  desc "show", "Show all food"
+  desc "show", "Show food"
+	method_option :all, :aliases => "-a", :desc => "Show all products"  
+	method_option :bad_date, :desc => "Show products with bad date"  
+	method_option :bad_amount, :desc => "Show products with bad amount"  
   def show
-    puts table_food(products)
+		all = options[:all]
+		bd = options[:bad_date]
+		ba = options[:bad_amount]
+		if all
+    	puts table_food(products)
+		elsif bd
+    	puts table_food(bad_products_date)
+		elsif ba
+    	puts table_food(bad_products_amount)
+		else
+    	puts table_food(products)	
+		end
   end
 
   desc "db", "Works with database"

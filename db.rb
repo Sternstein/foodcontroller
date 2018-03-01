@@ -1,25 +1,56 @@
 # Works with database
 module Db
+
 	def do_sql(sql)
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
     result = conn.exec(sql)
 		conn.close
 		return result	
 	end
+
+	def return_array(sql)
+    conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
+    result = conn.exec(sql)
+		conn.close
+		food_array = Array.new
+		result.each do |f|
+			food = Food.new
+			food.id = f['id']
+			food.name = f['name']
+			food.amount = f['amount'].to_i
+			food.expiration_speed = f['expire'].to_i
+			food.desc = f['description']
+			food.speed_of_eating = f['speed'].to_i
+			food.measure = f['measure']
+			food.date = f['date_in']
+			food_array.push(food)
+		end
+		pp food_array
+		return food_array
+	end
+
+	def bad_products_date
+		p = products
+		bad_p = Array.new
+		p.each do |f|
+			diff = find_diff(f.date,f.expiration_speed)
+			case diff
+			when 0..10000
+			else
+			  bad_p.push(f)
+			end
+		end
+		return bad_p 
+	end
 	
 	def bad_products_amount
     sql = "select * from food where speed >= amount;"
-		do_sql(sql)
+		return_array(sql)
 	end
 	
-	def bad_products_all
-    sql = "select * from food where speed >= amount;"
-		do_sql(sql)
-	end
-
   def products
-		sql = "select id,name,speed,expire,amount,date_in from food;"
-		do_sql(sql)
+		sql = "select * from food;"
+		return_array(sql)
   end
 
 
@@ -35,6 +66,7 @@ module Db
 		temp.each do |t|
     f.name = t['name']
 		f.desc = t['description']
+		f.measure = t['measure']
 		f.expiration_speed = t['expire'].to_i
 		f.speed_of_eating = t['speed'].to_i
 		end 

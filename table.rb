@@ -4,15 +4,10 @@ def table_food(result)
     rows = []
     rows << ['id', 'name', 'amount', 'date','status_amount', 'status_date']
     result.each do |row|
-      today = Date.today
-      production_date = Date.parse row['date_in']
-      exp_days = row['expire'].to_i
-      exp_date = production_date + exp_days
-      dif = exp_date - today
-      diff = dif.to_i
+			diff = find_diff(row.date,row.expiration_speed)
       status_date = check_date(diff)
-      status_amount = check_amount(row['amount'],row['speed'])
-      rows << [row['id'],row['name'],row['amount'],row['date_in'],status_amount,status_date]		
+      status_amount = check_amount(row.amount,row.speed_of_eating)
+      rows << [row.id,row.name,row.amount,row.date,status_amount,status_date]		
     end
     table = Terminal::Table.new :rows => rows
 		return table
@@ -23,9 +18,19 @@ def table_templates(result)
     rows << ['id', 'name', 'speed', 'expire', 'measure']
     result.each do |row|
     rows << [row['id'], row['name'],row['speed'],row['expire'],row['measure']]
-    end
+		end
     table = Terminal::Table.new :rows => rows
     return table
+end
+
+def find_diff(date,exp)
+  today = Date.today
+  production_date = Date.parse date
+  exp_days = exp 
+  exp_date = production_date + exp_days
+  dif = exp_date - today
+  diff = dif.to_i
+	return diff
 end
   
 def check_date(date)
