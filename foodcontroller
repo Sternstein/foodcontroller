@@ -9,42 +9,16 @@ require_relative "food.rb"
 require_relative "db.rb"
 require_relative "parser.rb"
 require_relative "table.rb"
+require_relative "menu.rb"
 include Parser
 include Table
 include Db
+include Menu
 class MyThorCommand < Thor
   desc "new", "Puts new food in database. Put arguments in the order"
   def new
-	  puts table_templates(templates)	
-		ans = ask "Please choose a template : "
-    a = ans.to_i
-		food = Food.new
-		food = get_template(a)
-		amount = ask "How much do you have : "
-		food.amount = amount.to_i
-		puts "Choose date : "
-		puts "1. Today"
-		puts "2. Yesterday"
-		puts "3. My date"
-		an = ask 'Enter a number'
-		data = an.to_i
-		case data
-		when 1
-			date = Date.today
-		when 2
-			date = Date.today - 1
-		when 3
-			year = ask 'Enter your date in format : 2018'
-			month = ask 'Enter your date in format : 01 '
-			day = ask 'Enter your date in format : 31 '
-			y = year.to_i
-			m = month.to_i
-			d = day.to_i
-			date = Date.new(y,m,d)
-		end
-		food.date = date
-		food.insert
-  end
+  	main_menu
+	end
 
 	desc "template", "Work with food templates"
 	method_option :list, :aliases => "-l", :desc => "Show list of templates"  	
@@ -56,29 +30,7 @@ class MyThorCommand < Thor
     puts table_templates(templates)
 	end
 	if create
-		tp = Food.new
-		name = ask "Put name of food : "
-		desc = ask "Put description for food : "
-		grmg = Array.new
-		grmg = ["gr", "mg", "p"]
-		correct_answer = nil
-			until correct_answer				
-				measure = (ask "Enter measure Gramms/Milligrams/Pieces : ", :limited_to => ["gr", "mg", "p"])
-				correct_answer = grmg.include?(measure) ? measure : nil
-				say ("Your response must be one of: gr / mg. Please try again.") unless correct_answer
-				correct_answer
-			end
-			
-		speed = ask "How fast will you eat it : "
-    expire = ask "How long you can keep it : "
-		sp = speed.to_i
-    ex = expire.to_i
-    tp.name = name
-    tp.desc = desc
-    tp.expiration_speed = ex
-    tp.speed_of_eating = sp
-    tp.measure = measure
-		tp.save_template
+		create_template
 	end
 	end
 
