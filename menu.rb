@@ -28,8 +28,8 @@ def create_template
 end
 
 def main_menu
-		puts "0. Create your own template"
-		puts "1. Select from existing templates"
+		puts "0. Create new template"
+		puts "1. Insert new food in db using existing templates"
 		choose = ask "Your choose : "
 		ch = choose.to_i
 		case ch
@@ -69,6 +69,64 @@ def main_menu
 		end
 		food.date = date
 		food.insert
+end
+
+def menu_for_update
+pr = products
+puts "List of products, which you can update"
+puts table_food(pr)
+ans = ask "Select product, which you want update : "
+a = ans.to_i
+i = a - 1
+sel = pr[i]
+puts "What do you want to update?"
+puts "1. Date"
+puts "2. Amount"
+puts "3. All"
+ans = ask "Your choice : "
+a = ans.to_i
+	case a
+	when 1
+		year = ask 'Enter your date in format : 2018'
+		month = ask 'Enter your date in format : 01 '
+		day = ask 'Enter your date in format : 31 '
+		y = year.to_i
+		m = month.to_i
+		d = day.to_i
+		date = Date.new(y,m,d)
+		sel.date = date
+		sel.update
+	when 2
+		amount = ask "Enter a new amount : "
+		sel.amount = amount.to_i
+		sel.update
+	when 3
+		year = ask 'Enter your date in format : 2018'
+		month = ask 'Enter your date in format : 01 '
+		day = ask 'Enter your date in format : 31 '
+		y = year.to_i
+		m = month.to_i
+		d = day.to_i
+		date = Date.new(y,m,d)
+		sel.date = date
+		amount = ask "Enter a new amount : "
+		sel.amount = amount.to_i
+		sel.update
+	else
+		puts 'Oopps. Looks like smth goes wrong'
+	end
+end
+
+def menu_for_delete
+pr = products
+puts "List of products, which you can update"
+puts table_food(pr)
+ans = ask "Select product, which you want update : "
+a = ans.to_i
+i = a - 1
+sel = pr[i]
+puts "You deleted #{sel.name}"
+sel.delete
 end
 
 end

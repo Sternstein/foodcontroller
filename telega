@@ -1,16 +1,20 @@
 #!/home/agagarin/.rbenv/shims/ruby
 require 'pg'
+require 'dotenv'
 require 'telegram/bot'
+require_relative 'food.rb'
 require_relative 'db.rb'
-token = ENV['telega_API']
-
+include Db
+Dotenv.load('.env')
+token = ENV['API']
 Telegram::Bot::Client.run(token) do |bot|
-	db = Db.new
-	res = db.bad_products
-	spisok = ''
+	res = products
+	spisok = "1111111111111111111111111111111111111111111111111111111111111\n"
 	res.each do |row|
-		spisok += row['name'].ljust(10) + row['amount'].ljust(10) + row['measure'] + "\n" 
+#		spisok += format("%10s %4i %2s", row.name,row.amount,row.measure) + "\n"
+		spisok += row.name.ljust(10) + row.amount.to_s.ljust(10) + row.measure + "\n"
 	end
-  	bot.api.send_message(chat_id: ENV['chat_id'], text: spisok)
-		puts spisok
+		bot.api.send_message(chat_id: ENV['TEST'] , text: spisok, parse_mode: "HTML")
+		pp spisok
 end
+

@@ -1,0 +1,8 @@
+#!/home/agagarin/.rbenv/shims/ruby
+require_relative 'db.rb'
+require_relative 'food.rb'
+include Db
+
+a = products
+persons = 2
+a.each {|a| a.omomom(persons)}

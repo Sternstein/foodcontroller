@@ -20,6 +20,16 @@ class MyThorCommand < Thor
   	main_menu
 	end
 
+  desc "update", "Update food"
+  def update
+  	menu_for_update
+	end
+
+  desc "delete", "Delete food"
+  def delete
+  	menu_for_delete
+	end
+
 	desc "template", "Work with food templates"
 	method_option :list, :aliases => "-l", :desc => "Show list of templates"  	
 	method_option :create, :aliases => "-c", :desc => "Create new template"  	

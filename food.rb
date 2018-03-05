@@ -72,8 +72,7 @@ class Food
 
 	def update
     conn = PG.connect( dbname: 'fooddb', user: ENV['USER'], password: ENV['PASS'] )
-    conn.exec("UPDATE FROM food WHERE id=#{id};")
-    conn.exec("UPDATE food SET name = '#{name}', description = '#{desc}',amount = #{amount} ,expire = #{expiration_speed}, measure = '#{measure}',speed = #{speed_of_eating},date_in = '#{date}' WHERE id=#{id});")
+    conn.exec("UPDATE food SET name = '#{name}', description = '#{desc}',amount = #{amount} ,expire = #{expiration_speed}, measure = '#{measure}',speed = #{speed_of_eating},date_in = '#{date}' WHERE id=#{id};")
     puts "Updated #{name}"
     conn.close
 	end
@@ -83,6 +82,15 @@ class Food
     conn.exec("INSERT INTO templates(name,description,expire,measure,speed) VALUES ('#{name}', '#{desc}', #{expiration_speed}, '#{measure}', #{speed_of_eating});")
     puts "Insert in db #{name}"
     conn.close
+	end
+	
+	def omomom(num)
+		speed = @speed_of_eating * num
+		@amount -= speed
+		if @amount < 0
+		@amount = 0
+		end
+		update
 	end
 
 end

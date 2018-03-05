@@ -25,7 +25,6 @@ module Db
 			food.date = f['date_in']
 			food_array.push(food)
 		end
-		pp food_array
 		return food_array
 	end
 

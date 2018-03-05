@@ -8,3 +8,28 @@
   measure: mg
   expire: 7
   speed: 150
+- name: Cheese 
+  description: Cow gives it to us
+  measure: gr
+  expire: 120
+  speed: 100
+- name: Beef 
+  description: Cow gives it to us
+  measure: gr
+  expire: 12
+  speed: 100
+- name: Fish 
+  description: Get from see
+  measure: gr
+  expire: 7
+  speed: 100
+- name: Wine 
+  description: Made from grape
+  measure: mg
+  expire: 7
+  speed: 150
+- name: Water 
+  description: Very important for life
+  measure: mg
+  expire: 30
+  speed: 1000
